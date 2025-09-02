@@ -11,7 +11,7 @@ export const UserList: React.FC<Props> = ({ people }) => {
     <div className="dropdown-menu" role="menu" data-cy="suggestions-list">
       <div className="dropdown-content">
         {people.map(user => (
-          <UserItem person={user} key={user.name} />
+          <UserItem person={user} key={user.id} />
         ))}
       </div>
     </div>

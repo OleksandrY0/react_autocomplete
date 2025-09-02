@@ -17,20 +17,46 @@ export const AutoComplete: React.FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const timerId = useRef<number>();
+  const lastFilteredTextRef = useRef('');
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+    onSelected(null);
+  };
+
+  const handleFocus = () => {
+    setIsOpen(true);
+    if (searchText === '') {
+      setFilteredPeople(people);
+    }
+  };
+
+  const handleSelect = (person: Person) => {
+    setSearchText(person.name);
+    onSelected(person);
+    setIsOpen(false);
+  };
 
   useEffect(() => {
-    clearTimeout(timerId.current);
+    const normalized = searchText.trim().toLowerCase();
 
+    if (normalized === lastFilteredTextRef.current) {
+      return;
+    }
+
+    if (normalized === '') {
+      setFilteredPeople(people);
+      lastFilteredTextRef.current = '';
+
+      return;
+    }
+
+    clearTimeout(timerId.current);
     timerId.current = window.setTimeout(() => {
-      if (searchText.trim() === '') {
-        setFilteredPeople(people);
-      } else {
-        setFilteredPeople(
-          people.filter(person =>
-            person.name.toLowerCase().includes(searchText.toLowerCase()),
-          ),
-        );
-      }
+      setFilteredPeople(
+        people.filter(person => person.name.toLowerCase().includes(normalized)),
+      );
+      lastFilteredTextRef.current = normalized;
     }, delay);
 
     return () => clearTimeout(timerId.current);
@@ -45,16 +71,8 @@ export const AutoComplete: React.FC<Props> = ({
           className="input"
           data-cy="search-input"
           value={searchText}
-          onChange={event => {
-            setSearchText(event.target.value);
-            onSelected(null);
-          }}
-          onFocus={() => {
-            setIsOpen(true);
-            if (searchText === '') {
-              setFilteredPeople(people);
-            }
-          }}
+          onChange={handleInputChange}
+          onFocus={handleFocus}
         />
       </div>
 
@@ -64,14 +82,10 @@ export const AutoComplete: React.FC<Props> = ({
             {filteredPeople.length > 0 ? (
               filteredPeople.map(person => (
                 <div
-                  key={person.name}
+                  key={person.id}
                   className="dropdown-item"
                   data-cy="suggestion-item"
-                  onClick={() => {
-                    setSearchText(person.name);
-                    onSelected(person);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => handleSelect(person)}
                 >
                   <p className="has-text-link">{person.name}</p>
                 </div>

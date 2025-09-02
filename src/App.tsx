@@ -8,6 +8,11 @@ import { Person } from './types/Person';
 export const App: React.FC = () => {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
 
+  const people = peopleFromServer.map((p, i) => ({
+    ...p,
+    id: i + 1,
+  }));
+
   return (
     <div className="container">
       <main className="section is-flex is-flex-direction-column">
@@ -18,7 +23,7 @@ export const App: React.FC = () => {
         </h1>
 
         <AutoComplete
-          people={peopleFromServer}
+          people={people}
           onSelected={setSelectedPerson}
         />
 
